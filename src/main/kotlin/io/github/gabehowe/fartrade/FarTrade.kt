@@ -1,22 +1,16 @@
-package io.github.gabehowe.unitedpostalservice
+package io.github.gabehowe.fartrade
 
 import net.milkbowl.vault.economy.Economy
 import org.bukkit.plugin.RegisteredServiceProvider
 import org.bukkit.plugin.java.JavaPlugin
+import io.github.gabehowe.fartrade.TradeInventory
 
-class UnitedPostalService : JavaPlugin() {
+class FarTrade : JavaPlugin() {
     private lateinit var economy: Economy
     override fun onEnable() {
-        if (!setupEconomy()) {
-            logger.severe(
-                String.format(
-                    "[%s] - Disabled due to no Vault dependency found!",
-                    description.name
-                )
-            )
-            server.pluginManager.disablePlugin(this)
-            return
-        }
+        getCommand("trade")?.setExecutor(TradeCommand())
+        TradeInventory(this).init()
+        logger.severe("hi how are you doing")
     }
 
     override fun onDisable() {
@@ -24,9 +18,6 @@ class UnitedPostalService : JavaPlugin() {
     }
 
     private fun setupEconomy(): Boolean {
-        if (server.pluginManager.getPlugin("Vault") == null) {
-            return false
-        }
         val rsp: RegisteredServiceProvider<Economy> = server.servicesManager.getRegistration(Economy::class.java)
             ?: return false
         economy = rsp.provider

@@ -1,8 +1,12 @@
-name: UnitedPostalService
-version: @version@
-main: io.github.gabehowe.unitedpostalservice.UnitedPostalService
+name: FarTrade
+version: 0.1.0
+main: io.github.gabehowe.fartrade.FarTrade
 api-version: 1.16
 depend: [ Vault ]
 authors: [ GabrielHowe ]
 description: Ships items over long distances, for a cost
 website: gabehowe.github.io
+commands:
+  test:
+    description: works
+    usage: /<command>
