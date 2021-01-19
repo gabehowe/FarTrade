@@ -4,14 +4,14 @@ import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import io.github.gabehowe.fartrade.FarTrade
 
-class TradeCommand : CommandExecutor {
+class TradeCommand(private val farTrade: FarTrade) : CommandExecutor {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         if (sender !is Player) {
             return true
         }
-        val screen = TradeInventory()
-        sender.openInventory(screen.inv)
+        sender.openInventory(farTrade.tradeInventory)
         return true
     }
 }

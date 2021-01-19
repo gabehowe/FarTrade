@@ -7,6 +7,6 @@ authors: [ GabrielHowe ]
 description: Ships items over long distances, for a cost
 website: gabehowe.github.io
 commands:
-  test:
+  trade:
     description: works
     usage: /<command>

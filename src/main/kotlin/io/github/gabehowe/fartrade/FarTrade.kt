@@ -6,11 +6,14 @@ import org.bukkit.plugin.java.JavaPlugin
 import io.github.gabehowe.fartrade.TradeInventory
 
 class FarTrade : JavaPlugin() {
+    var tradeInventory = TradeInventory().inv
     private lateinit var economy: Economy
     override fun onEnable() {
-        getCommand("trade")?.setExecutor(TradeCommand())
-        TradeInventory(this).init()
+        getCommand("trade")?.setExecutor(TradeCommand(this))
+        TradeInventory().init()
         logger.severe("hi how are you doing")
+        tradeInventory = TradeInventory().inv
+
     }
 
     override fun onDisable() {
