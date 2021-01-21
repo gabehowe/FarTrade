@@ -4,11 +4,19 @@ import org.bukkit.entity.HumanEntity
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.inventory.InventoryOpenEvent
 
 class TradeEvents(private val farTrade: FarTrade) : Listener {
     @EventHandler
     fun inventoryClickEvent(event: InventoryClickEvent) {
+        if (!farTrade.tradeMap.any{it.key.first == event.whoClicked.uniqueId || it.key.first == event.whoClicked.uniqueId}) {
+            return
+        }
+        val filter = farTrade.tradeMap.filter {it.key.first == event.whoClicked.uniqueId || it.key.first == event.whoClicked.uniqueId}
+        val onlyFiltered = filter[0]
+        val senderInv = farTrade.tradeMap[filter[0]]?.first!!
+        val receiverInv = farTrade.tradeMap[filter[0]]?.second!!
         if (event.clickedInventory?.holder is TradeInventoryReceiver) { // receiver
             event.isCancelled = true
             if (event.currentItem == null) {
@@ -19,11 +27,11 @@ class TradeEvents(private val farTrade: FarTrade) : Listener {
             }
             event.whoClicked.inventory.addItem(event.currentItem)
             event.currentItem!!.amount = 0
-            farTrade.updateInventory(farTrade.senderInv, farTrade.receiverInv)
-            farTrade.updateInventory(farTrade.receiverInv, farTrade.senderInv)
+            farTrade.updateInventory(senderInv, receiverInv)
+            farTrade.updateInventory(receiverInv, senderInv)
             return
         }
-        if (farTrade.receiverInv.viewers.contains(event.whoClicked)) {
+        if (receiverInv.viewers.contains(event.whoClicked)) {
             if (event.clickedInventory?.holder !is HumanEntity) {
                 return
             }
@@ -31,12 +39,12 @@ class TradeEvents(private val farTrade: FarTrade) : Listener {
                 return
             }
             for (i in 1..12) {
-                if (farTrade.receiverInv.contents[farTrade.senderOffer[i]] == null) {
+                if (receiverInv.contents[farTrade.senderOffer[i]] == null) {
                     event.isCancelled = true
-                    farTrade.receiverInv.setItem(farTrade.senderOffer[i], event.currentItem)
+                    receiverInv.setItem(farTrade.senderOffer[i], event.currentItem)
                     event.currentItem!!.amount = 0
-                    farTrade.updateInventory(farTrade.senderInv, farTrade.receiverInv)
-                    farTrade.updateInventory(farTrade.receiverInv, farTrade.senderInv)
+                    farTrade.updateInventory(senderInv, receiverInv)
+                    farTrade.updateInventory(receiverInv, senderInv)
                     return
                 }
             }
@@ -51,11 +59,11 @@ class TradeEvents(private val farTrade: FarTrade) : Listener {
             }
             event.whoClicked.inventory.addItem(event.currentItem)
             event.currentItem!!.amount = 0
-            farTrade.updateInventory(farTrade.senderInv, farTrade.receiverInv)
-            farTrade.updateInventory(farTrade.receiverInv, farTrade.senderInv)
+            farTrade.updateInventory(senderInv, receiverInv)
+            farTrade.updateInventory(receiverInv, senderInv)
             return
         }
-        if (farTrade.senderInv.viewers.contains(event.whoClicked)) {
+        if (senderInv.viewers.contains(event.whoClicked)) {
 
             if (event.clickedInventory?.holder !is HumanEntity) {
                 return
@@ -64,12 +72,12 @@ class TradeEvents(private val farTrade: FarTrade) : Listener {
                 return
             }
             for (i in 1..12) {
-                if (farTrade.senderInv.contents[farTrade.senderOffer[i]] == null) {
+                if (senderInv.contents[farTrade.senderOffer[i]] == null) {
                     event.isCancelled = true
-                    farTrade.senderInv.setItem(farTrade.senderOffer[i], event.currentItem)
+                    senderInv.setItem(farTrade.senderOffer[i], event.currentItem)
                     event.currentItem!!.amount = 0
-                    farTrade.updateInventory(farTrade.senderInv, farTrade.receiverInv)
-                    farTrade.updateInventory(farTrade.receiverInv, farTrade.senderInv)
+                    farTrade.updateInventory(senderInv, receiverInv)
+                    farTrade.updateInventory(receiverInv, senderInv)
                     return
                 }
             }
@@ -77,13 +85,20 @@ class TradeEvents(private val farTrade: FarTrade) : Listener {
     }
     @EventHandler
     fun acceptOrDeclineEvent(event: InventoryClickEvent ) {
-        if (event.clickedInventory?.holder !is TradeInventory || event.clickedInventory?.holder !is TradeInventoryReceiver) {
+        if (event.clickedInventory?.holder !is TradeInventory && event.clickedInventory?.holder !is TradeInventoryReceiver) {
             return
         }
         if (event.slot == 46) {
             event.isCancelled = true
             event.whoClicked.closeInventory()
         }
+    }
+    @EventHandler
+    fun InventoryCloseEvent(event: InventoryCloseEvent) {
+        if(event.inventory.holder !is TradeInventory && event.inventory.holder !is TradeInventoryReceiver) {
+            return
+        }
+        event.player.openInventory(event.inventory)
     }
     @EventHandler
     fun inventoryOpenEvent(event: InventoryOpenEvent) {

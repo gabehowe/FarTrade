@@ -4,9 +4,10 @@ import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.InventoryHolder
 
 class TradeInventory(private val farTrade: FarTrade) : InventoryHolder {
-
+    lateinit var inv : Inventory
     override fun getInventory(): Inventory {
-        return farTrade.senderInv
+        return inv
     }
+
 
 }

@@ -36,10 +36,7 @@ class TradeCommand(private val farTrade: FarTrade) : TabExecutor {
             sender.sendMessage("§cYou can't trade with yourself!")
             return true
         }
-        farTrade.initialize(args[0],sender.displayName, farTrade.receiverInv)
-        farTrade.initialize(sender.displayName,args[0], farTrade.senderInv)
-        Bukkit.getPlayer(args[0])?.openInventory(farTrade.receiverInv)
-        sender.openInventory(farTrade.senderInv)
+        farTrade.newTrade(sender.uniqueId,Bukkit.getPlayer(args[0])!!.uniqueId)
         return true
     }
 }

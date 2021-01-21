@@ -18,9 +18,8 @@ class FarTrade : JavaPlugin() {
     var greenglassmeta = blackglass.itemMeta
     var redglass = ItemStack(Material.RED_STAINED_GLASS_PANE)
     var redglassmeta = blackglass.itemMeta
-    var tradeMap = mutableMapOf<UUID,UUID>()
-    val senderInv: Inventory = Bukkit.createInventory(TradeInventory(this), 54, "Sender Inventory")
-    val receiverInv: Inventory = Bukkit.createInventory(TradeInventoryReceiver(this), 54, "Receiver Inventory")
+    var tradeMap = mutableMapOf<Pair<UUID, UUID>, Pair<Inventory, Inventory>>()
+
     val senderOffer = mutableListOf<Int>()
     override fun onEnable() {
         var e = 10
@@ -60,6 +59,7 @@ class FarTrade : JavaPlugin() {
         return economy != null
     }
 
+
     fun updateInventory(fromInventory: Inventory, toInventory: Inventory) {
         var e = 10
         var timeCount = 0
@@ -77,7 +77,20 @@ class FarTrade : JavaPlugin() {
         }
     }
 
-    fun initialize(player1: String, player2: String, inventory: Inventory) {
+    fun newTrade(senderUUID: UUID, receiverUUID: UUID) {
+        val uuidPair = Pair(senderUUID, receiverUUID)
+        val invPair = Pair(
+            Bukkit.createInventory(TradeInventory(this), 54, "Sender Inventory"),
+            Bukkit.createInventory(TradeInventoryReceiver(this), 54, "Receiver Inventory")
+        )
+        tradeMap[uuidPair] = invPair
+        initialize(senderUUID,receiverUUID,tradeMap[uuidPair]!!.first)
+        initialize(receiverUUID,senderUUID,tradeMap[uuidPair]!!.second)
+        Bukkit.getPlayer(senderUUID)?.openInventory(tradeMap[uuidPair]!!.first)
+        Bukkit.getPlayer(receiverUUID)?.openInventory(tradeMap[uuidPair]!!.second)
+    }
+
+    fun initialize(seeingPlayer: UUID, player2: UUID, inventory: Inventory) {
         for (i in 45..53) {
             inventory.setItem(i, blackglass)
         }
@@ -99,20 +112,20 @@ class FarTrade : JavaPlugin() {
             inventory.setItem(rSide, blackglass)
             rSide += 9
         }
-        val playerhead2 = ItemStack(Material.PLAYER_HEAD)
-        val playerheadmeta2 = playerhead2.itemMeta as SkullMeta?
-        playerheadmeta2!!.owningPlayer = Bukkit.getPlayer(player2)
-        playerheadmeta2.setDisplayName("§6${player2}")
-        playerhead2.itemMeta = playerheadmeta2
-        inventory.setItem(51, playerhead2)
         val playerhead = ItemStack(Material.PLAYER_HEAD)
         val playerheadmeta = playerhead.itemMeta as SkullMeta?
-        playerheadmeta!!.owningPlayer = Bukkit.getPlayer(player1)
-        playerheadmeta.setDisplayName("§6${player1}")
+        playerheadmeta!!.owningPlayer = Bukkit.getPlayer(seeingPlayer)
+        playerheadmeta.setDisplayName("§6${Bukkit.getPlayer(seeingPlayer)?.displayName}")
         playerhead.itemMeta = playerheadmeta
         inventory.setItem(47, playerhead)
         inventory.setItem(46, redglass)
         inventory.setItem(48, greenglass)
+        val playerhead2 = ItemStack(Material.PLAYER_HEAD)
+        val playerheadmeta2 = playerhead2.itemMeta as SkullMeta?
+        playerheadmeta2!!.owningPlayer = Bukkit.getPlayer(player2)
+        playerheadmeta2.setDisplayName("§6${Bukkit.getPlayer(player2)?.displayName}")
+        playerhead2.itemMeta = playerheadmeta2
+        inventory.setItem(51, playerhead2)
 
     }
 
