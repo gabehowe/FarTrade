@@ -8,5 +8,5 @@ description: Ships items over long distances, for a cost
 website: gabehowe.github.io
 commands:
   trade:
-    description: works
-    usage: /<command>
+    description: trades with a player
+    usage: /<command> <player>
