@@ -1,22 +1,35 @@
 package io.github.gabehowe.fartrade
 
+import org.apache.commons.lang.ObjectUtils
+import org.bukkit.Bukkit
+import org.bukkit.Material
+import org.bukkit.entity.EntityType
 import org.bukkit.entity.HumanEntity
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.entity.EntityPickupItemEvent
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.inventory.InventoryOpenEvent
+import org.bukkit.inventory.Inventory
+import java.lang.NullPointerException
+import java.util.*
 
 class TradeEvents(private val farTrade: FarTrade) : Listener {
     @EventHandler
     fun inventoryClickEvent(event: InventoryClickEvent) {
-        if (!farTrade.tradeMap.any{it.key.first == event.whoClicked.uniqueId || it.key.first == event.whoClicked.uniqueId}) {
+        if (!farTrade.tradeMap.any { it.key.first == event.whoClicked.uniqueId || it.key.second == event.whoClicked.uniqueId }) {
             return
         }
-        val filter = farTrade.tradeMap.filter {it.key.first == event.whoClicked.uniqueId || it.key.first == event.whoClicked.uniqueId}
+        val filter =
+            farTrade.tradeMap.filter { it.key.first == event.whoClicked.uniqueId || it.key.second == event.whoClicked.uniqueId }
+                .toList()
+        if (filter.isEmpty()) {
+            return
+        }
         val onlyFiltered = filter[0]
-        val senderInv = farTrade.tradeMap[filter[0]]?.first!!
-        val receiverInv = farTrade.tradeMap[filter[0]]?.second!!
+        val senderInv = onlyFiltered.second.first
+        val receiverInv = onlyFiltered.second.second
         if (event.clickedInventory?.holder is TradeInventoryReceiver) { // receiver
             event.isCancelled = true
             if (event.currentItem == null) {
@@ -83,23 +96,84 @@ class TradeEvents(private val farTrade: FarTrade) : Listener {
             }
         }
     }
+
     @EventHandler
-    fun acceptOrDeclineEvent(event: InventoryClickEvent ) {
-        if (event.clickedInventory?.holder !is TradeInventory && event.clickedInventory?.holder !is TradeInventoryReceiver) {
+    fun acceptOrDeclineEvent(event: InventoryClickEvent) {
+        if (!farTrade.tradeMap.any { it.key.first == event.whoClicked.uniqueId || it.key.second == event.whoClicked.uniqueId }) {
+            return
+        }
+        if (event.slot != 46 && event.slot != 48) {
+            return
+        }
+        val filter =
+            farTrade.tradeMap.filter { it.key.first == event.whoClicked.uniqueId || it.key.second == event.whoClicked.uniqueId }
+                .toList()
+        val otherPlayer: UUID
+        val otherInventory: Inventory
+        if (event.whoClicked.uniqueId == filter[0].first.first) {
+            otherPlayer = filter[0].first.second
+            otherInventory = filter[0].second.second
+        } else {
+            otherPlayer = filter[0].first.first
+            otherInventory = filter[0].second.first
+        }
+        if (event.clickedInventory?.getItem(48)?.type == Material.YELLOW_STAINED_GLASS_PANE && otherInventory.getItem(48)?.type == Material.YELLOW_STAINED_GLASS_PANE) {
+            farTrade.tradeMap.remove(filter[0].first)
+            farTrade.acceptTrade(event.whoClicked.uniqueId, otherPlayer, event.clickedInventory!!, otherInventory)
+            event.isCancelled = true
             return
         }
         if (event.slot == 46) {
+            farTrade.returnItems(event.whoClicked.uniqueId, otherPlayer, event.clickedInventory!!, otherInventory)
+            Bukkit.getPlayer(otherPlayer)!!.sendMessage("§cThe other player cancelled the trade")
+            farTrade.tradeMap.remove(filter[0].first)
             event.isCancelled = true
+            event.whoClicked.sendMessage("§cYou cancelled the trade")
+            Bukkit.getPlayer(otherPlayer)?.closeInventory()
             event.whoClicked.closeInventory()
         }
-    }
-    @EventHandler
-    fun InventoryCloseEvent(event: InventoryCloseEvent) {
-        if(event.inventory.holder !is TradeInventory && event.inventory.holder !is TradeInventoryReceiver) {
-            return
+        if (event.slot == 48) {
+            if (event.currentItem?.type != Material.GREEN_STAINED_GLASS_PANE) {
+                return
+            }
+            event.currentItem?.type = Material.YELLOW_STAINED_GLASS_PANE
+            otherInventory.getItem(50)?.type = Material.YELLOW_STAINED_GLASS_PANE
+            otherInventory.getItem(52)?.type = Material.YELLOW_STAINED_GLASS_PANE
+            event.isCancelled = true
+            if (event.clickedInventory?.getItem(48)?.type == Material.YELLOW_STAINED_GLASS_PANE && otherInventory.getItem(48)?.type == Material.YELLOW_STAINED_GLASS_PANE) {
+                farTrade.tradeMap.remove(filter[0].first)
+                farTrade.acceptTrade(event.whoClicked.uniqueId, otherPlayer, event.clickedInventory!!, otherInventory)
+                event.isCancelled = true
+                return
+            }
         }
-        event.player.openInventory(event.inventory)
+
     }
+
+    @EventHandler
+    fun inventoryCloseEvent(event: InventoryCloseEvent) {
+        if (!farTrade.tradeMap.any { it.key.first == event.player.uniqueId || it.key.second == event.player.uniqueId }) {
+            return
+    }
+        val filter =
+            farTrade.tradeMap.filter { it.key.first == event.player.uniqueId || it.key.second == event.player.uniqueId }
+                .toList()
+        val otherPlayer: UUID
+        val otherInventory: Inventory
+        if (event.player.uniqueId == filter[0].first.first) {
+            otherPlayer = filter[0].first.second
+            otherInventory = filter[0].second.second
+        } else {
+            otherPlayer = filter[0].first.first
+            otherInventory = filter[0].second.first
+        }
+        farTrade.returnItems(event.player.uniqueId, otherPlayer, event.inventory, otherInventory)
+        farTrade.tradeMap.remove(filter[0].first)
+        Bukkit.getPlayer(otherPlayer)?.closeInventory()
+        Bukkit.getPlayer(otherPlayer)!!.sendMessage("§cThe other player cancelled the trade")
+        event.player.sendMessage("§cYou cancelled the trade")
+    }
+
     @EventHandler
     fun inventoryOpenEvent(event: InventoryOpenEvent) {
         val list = event.player.inventory.contents
@@ -114,6 +188,18 @@ class TradeEvents(private val farTrade: FarTrade) : Listener {
                 event.player.inventory.remove(item)
             }
         }
+    }
+
+    @EventHandler
+    fun itemPickUpEvent(event: EntityPickupItemEvent) {
+        if (event.entityType != EntityType.PLAYER) {
+            return
+        }
+        if (!farTrade.tradeMap.any { it.key.first == event.entity.uniqueId || it.key.first == event.entity.uniqueId }) {
+            return
+        }
+        event.isCancelled = true
+
     }
 
 }

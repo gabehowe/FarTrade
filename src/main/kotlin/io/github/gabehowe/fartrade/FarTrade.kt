@@ -19,6 +19,7 @@ class FarTrade : JavaPlugin() {
     var redglass = ItemStack(Material.RED_STAINED_GLASS_PANE)
     var redglassmeta = blackglass.itemMeta
     var tradeMap = mutableMapOf<Pair<UUID, UUID>, Pair<Inventory, Inventory>>()
+    var voteMap = mutableMapOf<Pair<UUID, UUID>, Boolean>()
 
     val senderOffer = mutableListOf<Int>()
     override fun onEnable() {
@@ -84,10 +85,40 @@ class FarTrade : JavaPlugin() {
             Bukkit.createInventory(TradeInventoryReceiver(this), 54, "Receiver Inventory")
         )
         tradeMap[uuidPair] = invPair
-        initialize(senderUUID,receiverUUID,tradeMap[uuidPair]!!.first)
-        initialize(receiverUUID,senderUUID,tradeMap[uuidPair]!!.second)
+        initialize(senderUUID, receiverUUID, tradeMap[uuidPair]!!.first)
+        initialize(receiverUUID, senderUUID, tradeMap[uuidPair]!!.second)
         Bukkit.getPlayer(senderUUID)?.openInventory(tradeMap[uuidPair]!!.first)
         Bukkit.getPlayer(receiverUUID)?.openInventory(tradeMap[uuidPair]!!.second)
+    }
+
+    fun acceptTrade(uuid: UUID, uuid2: UUID, inventory: Inventory, inventory2: Inventory) {
+        for (i in 0..12) {
+            val item = inventory.getItem(senderOffer[i]) ?: continue
+            Bukkit.getPlayer(uuid2)?.inventory?.addItem(item)
+            item.amount = 0
+        }
+        for (i in 0..12) {
+            val item = inventory2.getItem(senderOffer[i]) ?: continue
+            Bukkit.getPlayer(uuid)?.inventory?.addItem(item)
+            item.amount = 0
+        }
+        Bukkit.getPlayer(uuid)?.closeInventory()
+        Bukkit.getPlayer(uuid2)?.closeInventory()
+        Bukkit.getPlayer(uuid)?.sendMessage("§aTrade Accepted")
+        Bukkit.getPlayer(uuid2)?.sendMessage("§aTrade Accepted")
+    }
+
+    fun returnItems(uuid: UUID, uuid2: UUID, inventory: Inventory, inventory2: Inventory) {
+        for (i in 0..12) {
+            val item = inventory.getItem(senderOffer[i]) ?: continue
+            Bukkit.getPlayer(uuid)?.inventory?.addItem(item)
+            item.amount = 0
+        }
+        for (i in 0..12) {
+            val item = inventory2.getItem(senderOffer[i]) ?: continue
+            Bukkit.getPlayer(uuid2)?.inventory?.addItem(item)
+            item.amount = 0
+        }
     }
 
     fun initialize(seeingPlayer: UUID, player2: UUID, inventory: Inventory) {
