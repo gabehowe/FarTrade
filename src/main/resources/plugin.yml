@@ -9,4 +9,4 @@ website: gabehowe.github.io
 commands:
   trade:
     description: trades with a player
-    usage: /<command> <player>
+    usage: /<command> <player|accept <player>|deny <player>>

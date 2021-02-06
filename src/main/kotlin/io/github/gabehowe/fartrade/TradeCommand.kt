@@ -21,7 +21,7 @@ class TradeCommand(private val farTrade: FarTrade) : TabExecutor {
                 if (Bukkit.getPlayer(player.uniqueId)!!.displayName == sender.name) {
                     continue
                 }
-                var list = mutableListOf<String>()
+                val list = mutableListOf<String>()
                 list.add(Bukkit.getPlayer(player.uniqueId)!!.displayName)
                 return list
             }
@@ -33,9 +33,13 @@ class TradeCommand(private val farTrade: FarTrade) : TabExecutor {
         if (sender !is Player) {
             return true
         }
+        if (args.isEmpty()) {
+            return false
+        }
         if (args.size == 1) {
             if (!Bukkit.getOnlinePlayers().contains(Bukkit.getPlayer(args[0]))) {
                 sender.sendMessage("§c'${args[0]}' is not online or does not exist")
+                return true
             }
             if (farTrade.voteMap[Pair(sender.uniqueId, Bukkit.getPlayer(args[0])!!.uniqueId)] == false) {
                 sender.sendMessage("§cYou already have an outgoing trade request to ${args[0]}")
@@ -44,11 +48,12 @@ class TradeCommand(private val farTrade: FarTrade) : TabExecutor {
             farTrade.voteMap[Pair(sender.uniqueId, Bukkit.getPlayer(args[0])!!.uniqueId)] = false
             val msg = TextComponent("§a§l[ACCEPT]")
             msg.clickEvent = ClickEvent(ClickEvent.Action.RUN_COMMAND, "/trade accept ${sender.displayName}")
-            val msg2 = TextComponent("§a§l[ACCEPT]")
+            val msg2 = TextComponent("§c§l[DENY]")
             msg2.clickEvent = ClickEvent(ClickEvent.Action.RUN_COMMAND, "/trade deny ${sender.displayName}")
             Bukkit.getPlayer(args[0])!!.sendMessage("§a${sender.displayName} sent you a trade request              ")
-            val msg3 = TextComponent(msg.text + " " + msg2.text)
-            Bukkit.getPlayer(args[0])!!.spigot().sendMessage(msg3)
+            msg.addExtra(TextComponent(" "))
+            msg.addExtra(msg2)
+            Bukkit.getPlayer(args[0])!!.spigot().sendMessage(msg)
             return true
         }
         if (args.size > 2) {
@@ -64,9 +69,6 @@ class TradeCommand(private val farTrade: FarTrade) : TabExecutor {
                 sender.sendMessage("§c${args[1]} has not extended a trade request to you")
                 return true
             }
-            val filter =
-                farTrade.voteMap.filter { it.key.first == sender.uniqueId || it.key.second == sender.uniqueId }
-                    .toList()
             if (!Bukkit.getOnlinePlayers().contains(Bukkit.getPlayer(args[1]))) {
                 sender.sendMessage("§c'${args[1]}' is not online or does not exist")
             }

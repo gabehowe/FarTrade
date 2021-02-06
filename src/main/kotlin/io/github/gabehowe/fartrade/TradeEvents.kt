@@ -127,6 +127,7 @@ class TradeEvents(private val farTrade: FarTrade) : Listener {
             farTrade.returnItems(event.whoClicked.uniqueId, otherPlayer, event.clickedInventory!!, otherInventory)
             Bukkit.getPlayer(otherPlayer)!!.sendMessage("§cThe other player cancelled the trade")
             farTrade.tradeMap.remove(filter[0].first)
+            farTrade.voteMap.remove(filter[0].first)
             event.isCancelled = true
             event.whoClicked.sendMessage("§cYou cancelled the trade")
             Bukkit.getPlayer(otherPlayer)?.closeInventory()
@@ -158,6 +159,9 @@ class TradeEvents(private val farTrade: FarTrade) : Listener {
         val filter =
             farTrade.tradeMap.filter { it.key.first == event.player.uniqueId || it.key.second == event.player.uniqueId }
                 .toList()
+        val filter2 =
+            farTrade.voteMap.filter { it.key.first == event.player.uniqueId || it.key.second == event.player.uniqueId }
+                .toList()
         val otherPlayer: UUID
         val otherInventory: Inventory
         if (event.player.uniqueId == filter[0].first.first) {
@@ -169,6 +173,7 @@ class TradeEvents(private val farTrade: FarTrade) : Listener {
         }
         farTrade.returnItems(event.player.uniqueId, otherPlayer, event.inventory, otherInventory)
         farTrade.tradeMap.remove(filter[0].first)
+        farTrade.voteMap.remove(filter2[0].first)
         Bukkit.getPlayer(otherPlayer)?.closeInventory()
         Bukkit.getPlayer(otherPlayer)!!.sendMessage("§cThe other player cancelled the trade")
         event.player.sendMessage("§cYou cancelled the trade")

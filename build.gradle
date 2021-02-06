@@ -17,10 +17,7 @@ repositories {
         name = 'spigotmc-repo'
         url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
     }
-    maven {
-        name = 'sonatype'
-        url = 'https://oss.sonatype.org/content/groups/public/'
-    }
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     maven { url 'https://jitpack.io'}
     maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
 }
@@ -29,6 +26,7 @@ dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.16.4-R0.1-SNAPSHOT'
     compileOnly "com.github.MilkBowl:VaultAPI:1.7"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "net.md-5:bungeecord-api:1.16-R0.3"
 }
 
 processResources {
