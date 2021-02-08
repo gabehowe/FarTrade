@@ -20,6 +20,11 @@ class FarTrade : JavaPlugin() {
     var redglassmeta = blackglass.itemMeta
     var tradeMap = mutableMapOf<Pair<UUID, UUID>, Pair<Inventory, Inventory>>()
     var voteMap = mutableMapOf<Pair<UUID, UUID>, Boolean>()
+    var voteSessionList = mutableListOf<UUID>()
+    val voteTime: Number
+        get() {
+            return (config.get("vote-time") as Number?)!!
+        }
 
     val senderOffer = mutableListOf<Int>()
     override fun onEnable() {
@@ -45,6 +50,7 @@ class FarTrade : JavaPlugin() {
         getCommand("trade")?.setExecutor(TradeCommand(this))
         logger.severe("hi how are you doing")
         server.pluginManager.registerEvents(TradeEvents(this), this)
+        saveDefaultConfig()
 
     }
 
@@ -121,7 +127,7 @@ class FarTrade : JavaPlugin() {
         }
     }
 
-    fun initialize(seeingPlayer: UUID, player2: UUID, inventory: Inventory) {
+    private fun initialize(seeingPlayer: UUID, player2: UUID, inventory: Inventory) {
         for (i in 45..53) {
             inventory.setItem(i, blackglass)
         }
