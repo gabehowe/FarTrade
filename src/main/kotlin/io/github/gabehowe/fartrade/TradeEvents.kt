@@ -1,6 +1,5 @@
 package io.github.gabehowe.fartrade
 
-import org.apache.commons.lang.ObjectUtils
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.EntityType
@@ -13,7 +12,6 @@ import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.inventory.InventoryOpenEvent
 import org.bukkit.inventory.Inventory
-import java.lang.NullPointerException
 import java.util.*
 
 class TradeEvents(private val farTrade: FarTrade) : Listener {

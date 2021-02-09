@@ -1,7 +1,5 @@
 package io.github.gabehowe.fartrade
 
-import net.md_5.bungee.api.chat.ClickEvent
-import net.md_5.bungee.api.chat.TextComponent
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.Sound
@@ -12,6 +10,9 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitTask
 import java.util.*
+import net.md_5.bungee.api.*
+import net.md_5.bungee.api.chat.ClickEvent
+import net.md_5.bungee.api.chat.TextComponent
 
 
 class TradeCommand(private val farTrade: FarTrade) : TabExecutor {
@@ -23,11 +24,11 @@ class TradeCommand(private val farTrade: FarTrade) : TabExecutor {
     ): MutableList<String> {
         if (args.size == 1) {
             for (player in Bukkit.getOnlinePlayers()) {
-                if (Bukkit.getPlayer(player.uniqueId)!!.displayName == sender.name) {
+                if (Bukkit.getPlayer(player.uniqueId)!!.name == sender.name) {
                     continue
                 }
                 val list = mutableListOf<String>()
-                list.add(Bukkit.getPlayer(player.uniqueId)!!.displayName)
+                list.add(Bukkit.getPlayer(player.uniqueId)!!.name)
                 return list
             }
         }
@@ -49,22 +50,22 @@ class TradeCommand(private val farTrade: FarTrade) : TabExecutor {
                 return true
             }
             if (!Bukkit.getOnlinePlayers().contains(Bukkit.getPlayer(args[0]))) {
-                sender.sendMessage("§c'${args[0]}' is not online or does not exist")
+                sender.sendMessage("§c'${args[0]}§c' is not online or does not exist")
                 return true
             }
             val otherPlayer = Bukkit.getPlayer(args[0])!!
             if (farTrade.voteMap[Pair(sender.uniqueId, Bukkit.getPlayer(args[0])!!.uniqueId)] == true) {
-                sender.sendMessage("§cYou already have an outgoing trade request to ${Bukkit.getPlayer(args[0])!!.displayName}")
+                sender.sendMessage("§cYou already have an outgoing trade request to ${Bukkit.getPlayer(args[0])!!.displayName}§c")
                 return true
             }
             farTrade.voteSessionList.add(sessionID)
             farTrade.voteMap[Pair(sender.uniqueId, Bukkit.getPlayer(args[0])!!.uniqueId)] = true
-            sender.sendMessage("§aYou sent a trade request to ${otherPlayer.displayName}")
+            sender.sendMessage("§aYou sent a trade request to ${otherPlayer.displayName}§c")
             val msg = TextComponent("§a§l[ACCEPT]")
-            msg.clickEvent = ClickEvent(ClickEvent.Action.RUN_COMMAND, "/trade accept ${sender.displayName}")
+            msg.clickEvent = ClickEvent(ClickEvent.Action.RUN_COMMAND, "/trade accept ${sender.name}")
             val msg2 = TextComponent("§c§l[DENY]")
-            msg2.clickEvent = ClickEvent(ClickEvent.Action.RUN_COMMAND, "/trade deny ${sender.displayName}")
-            otherPlayer.sendMessage("§a${sender.displayName} sent you a trade request              ")
+            msg2.clickEvent = ClickEvent(ClickEvent.Action.RUN_COMMAND, "/trade deny ${sender.name}")
+            otherPlayer.sendMessage("§a${sender.displayName}§c sent you a trade request              ")
             msg.addExtra(TextComponent(" "))
             msg.addExtra(msg2)
             otherPlayer.spigot().sendMessage(msg)
@@ -76,8 +77,8 @@ class TradeCommand(private val farTrade: FarTrade) : TabExecutor {
                 else {
                     farTrade.voteMap.remove(Pair(sender.uniqueId, Bukkit.getPlayer(args[0])!!.uniqueId))
                     farTrade.voteSessionList.remove(sessionID)
-                    sender.sendMessage("§cYour trade request to ${otherPlayer.displayName} expired")
-                    otherPlayer.sendMessage("§cYour trade request from ${sender.displayName} expired")
+                    sender.sendMessage("§cYour trade request to ${otherPlayer.displayName}§c §cexpired")
+                    otherPlayer.sendMessage("§cYour trade request from ${sender.displayName}§c §cexpired")
                 }
             },(farTrade.voteTime.toDouble() * 20).toLong())
             return true
@@ -91,22 +92,22 @@ class TradeCommand(private val farTrade: FarTrade) : TabExecutor {
                 return true
             }
             if (farTrade.voteMap[Pair(Bukkit.getPlayer(args[1])!!.uniqueId, sender.uniqueId)] != true) {
-                sender.sendMessage("§cCouldn't find an active trade request from ${Bukkit.getPlayer(args[1])!!.displayName}")
+                sender.sendMessage("§cCouldn't find an active trade request from ${Bukkit.getPlayer(args[1])!!.displayName}§c")
                 return true
             }
             farTrade.voteMap.remove(Pair(Bukkit.getPlayer(args[1])!!.uniqueId, sender.uniqueId))
             farTrade.voteSessionList.remove(sessionID)
             Bukkit.getScheduler().cancelTasks(farTrade)
-            Bukkit.getPlayer(args[1])?.sendMessage("§c${sender.displayName} denied your trade request")
+            Bukkit.getPlayer(args[1])?.sendMessage("§c${sender.displayName}§c §cdenied your trade request")
             return true
         }
         if (args[0].toLowerCase() == "accept") {
             if (!Bukkit.getOnlinePlayers().contains(Bukkit.getPlayer(args[1]))) {
-                sender.sendMessage("§c'${args[1]}' is not online or does not exist")
+                sender.sendMessage("§c'${args[1]}§c' is not online or does not exist")
                 return true
             }
             if (!farTrade.voteMap.any { it.key.second == sender.uniqueId }) {
-                sender.sendMessage("§cCouldn't find an active trade request from ${Bukkit.getPlayer(args[1])!!.displayName}")
+                sender.sendMessage("§cCouldn't find an active trade request from ${Bukkit.getPlayer(args[1])!!.displayName}§c")
                 return true
             }
             if (args[1].equals(sender.displayName, ignoreCase = true)) {

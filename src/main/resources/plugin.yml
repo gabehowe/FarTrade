@@ -2,7 +2,9 @@ name: FarTrade
 version: 0.1.0
 main: io.github.gabehowe.fartrade.FarTrade
 api-version: 1.16
-depend: [ Vault ]
+depend:
+  - Treasury
+  - Vault
 authors: [ GabrielHowe ]
 description: Ships items over long distances, for a cost
 website: gabehowe.github.io
@@ -10,3 +12,4 @@ commands:
   trade:
     description: trades with a player
     usage: /<command> <player|accept <player>|deny <player>>
+    aliases: [ tr ]
