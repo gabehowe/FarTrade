@@ -3,11 +3,13 @@ package io.github.gabehowe.fartrade
 import net.md_5.bungee.api.chat.ClickEvent
 import net.md_5.bungee.api.chat.TextComponent
 import org.bukkit.Bukkit
+import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabExecutor
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitTask
 import java.util.*
 
@@ -52,7 +54,7 @@ class TradeCommand(private val farTrade: FarTrade) : TabExecutor {
             }
             val otherPlayer = Bukkit.getPlayer(args[0])!!
             if (farTrade.voteMap[Pair(sender.uniqueId, Bukkit.getPlayer(args[0])!!.uniqueId)] == true) {
-                sender.sendMessage("§cYou already have an outgoing trade request to ${Bukkit.getPlayer(args[1])!!.displayName}")
+                sender.sendMessage("§cYou already have an outgoing trade request to ${Bukkit.getPlayer(args[0])!!.displayName}")
                 return true
             }
             farTrade.voteSessionList.add(sessionID)

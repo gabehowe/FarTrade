@@ -5,6 +5,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.HumanEntity
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityPickupItemEvent
@@ -126,9 +127,9 @@ class TradeEvents(private val farTrade: FarTrade) : Listener {
         if (event.slot == 46) {
             farTrade.returnItems(event.whoClicked.uniqueId, otherPlayer, event.clickedInventory!!, otherInventory)
             Bukkit.getPlayer(otherPlayer)!!.sendMessage("§cThe other player cancelled the trade")
+            event.whoClicked.sendMessage("§cYou cancelled the trade")
             farTrade.tradeMap.remove(filter[0].first)
             event.isCancelled = true
-            event.whoClicked.sendMessage("§cYou cancelled the trade")
             Bukkit.getPlayer(otherPlayer)?.closeInventory()
             event.whoClicked.closeInventory()
         }
@@ -142,6 +143,15 @@ class TradeEvents(private val farTrade: FarTrade) : Listener {
             event.isCancelled = true
             if (event.clickedInventory?.getItem(48)?.type == Material.YELLOW_STAINED_GLASS_PANE && otherInventory.getItem(48)?.type == Material.YELLOW_STAINED_GLASS_PANE) {
                 farTrade.tradeMap.remove(filter[0].first)
+                if (farTrade.countItems(event.clickedInventory!!) > farTrade.getEmptySlots(event.whoClicked as Player) ||
+                    farTrade.countItems(otherInventory) > farTrade.getEmptySlots(Bukkit.getPlayer(otherPlayer)!!)) {
+                    farTrade.returnItems(event.whoClicked.uniqueId, otherPlayer, event.clickedInventory!!, otherInventory)
+                    Bukkit.getPlayer(otherPlayer)!!.sendMessage("§cThe other player cancelled the trade")
+                    event.whoClicked.sendMessage("§cYou and/or the other player didn't have enough space in their inventory")
+                    Bukkit.getPlayer(otherPlayer)?.closeInventory()
+                    event.whoClicked.closeInventory()
+                    return
+                }
                 farTrade.acceptTrade(event.whoClicked.uniqueId, otherPlayer, event.clickedInventory!!, otherInventory)
                 event.isCancelled = true
                 return

@@ -3,12 +3,30 @@ package io.github.gabehowe.fartrade
 import net.milkbowl.vault.economy.Economy
 import org.bukkit.Bukkit
 import org.bukkit.Material
+import org.bukkit.entity.EntityType
+import org.bukkit.entity.Item
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.SkullMeta
 import org.bukkit.plugin.RegisteredServiceProvider
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.*
+import sun.audio.AudioPlayer.player
+import sun.audio.AudioPlayer.player
+import org.bukkit.entity.Player
+import org.bukkit.inventory.PlayerInventory
+
+
+
+
+
+
+
+
+
+
+
+
 
 class FarTrade : JavaPlugin() {
     private lateinit var economy: Economy
@@ -98,15 +116,15 @@ class FarTrade : JavaPlugin() {
     }
 
     fun acceptTrade(uuid: UUID, uuid2: UUID, inventory: Inventory, inventory2: Inventory) {
+        val p1 = Bukkit.getPlayer(uuid)!!
+        val p2 = Bukkit.getPlayer(uuid2)!!
         for (i in 0..12) {
             val item = inventory.getItem(senderOffer[i]) ?: continue
             Bukkit.getPlayer(uuid2)?.inventory?.addItem(item)
-            item.amount = 0
         }
         for (i in 0..12) {
             val item = inventory2.getItem(senderOffer[i]) ?: continue
             Bukkit.getPlayer(uuid)?.inventory?.addItem(item)
-            item.amount = 0
         }
         Bukkit.getPlayer(uuid)?.closeInventory()
         Bukkit.getPlayer(uuid2)?.closeInventory()
@@ -115,15 +133,15 @@ class FarTrade : JavaPlugin() {
     }
 
     fun returnItems(uuid: UUID, uuid2: UUID, inventory: Inventory, inventory2: Inventory) {
+        val p1 = Bukkit.getPlayer(uuid)!!
+        val p2 = Bukkit.getPlayer(uuid2)!!
         for (i in 0..12) {
             val item = inventory.getItem(senderOffer[i]) ?: continue
-            Bukkit.getPlayer(uuid)?.inventory?.addItem(item)
-            item.amount = 0
+            p1.inventory.addItem(item)
         }
         for (i in 0..12) {
             val item = inventory2.getItem(senderOffer[i]) ?: continue
-            Bukkit.getPlayer(uuid2)?.inventory?.addItem(item)
-            item.amount = 0
+            p2.inventory.addItem(item)
         }
     }
 
@@ -164,6 +182,23 @@ class FarTrade : JavaPlugin() {
         playerhead2.itemMeta = playerheadmeta2
         inventory.setItem(51, playerhead2)
 
+    }
+    fun getEmptySlots(p: Player): Int {
+        val inventory = p.inventory
+        val cont = inventory.contents
+        var i = 0
+        for (item in cont) if (item != null && item.type != Material.AIR) {
+            i++
+        }
+        return 36 - i
+    }
+    fun countItems(inventory: Inventory): Int {
+        var itemsNumber = 0
+        for (i in 0..12) {
+            val item = inventory.getItem(senderOffer[i]) ?: continue
+            itemsNumber++
+        }
+        return itemsNumber
     }
 
 }
