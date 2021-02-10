@@ -45,7 +45,7 @@ class TradeCommand(private val farTrade: FarTrade) : TabExecutor {
         }
         val sessionID = UUID.randomUUID()
         if (args.size == 1) {
-            if (args[0].equals(sender.displayName, ignoreCase = true)) {
+            if (args[0].equals(sender.name, ignoreCase = true)) {
                 sender.sendMessage("§cYou can't trade with yourself!")
                 return true
             }
@@ -78,7 +78,9 @@ class TradeCommand(private val farTrade: FarTrade) : TabExecutor {
                     farTrade.voteMap.remove(Pair(sender.uniqueId, Bukkit.getPlayer(args[0])!!.uniqueId))
                     farTrade.voteSessionList.remove(sessionID)
                     sender.sendMessage("§cYour trade request to ${otherPlayer.displayName}§c §cexpired")
+                    sender.playSound(sender.location, Sound.ENTITY_PIG_DEATH, 1.0f, 1.0f)
                     otherPlayer.sendMessage("§cYour trade request from ${sender.displayName}§c §cexpired")
+                    otherPlayer.playSound(otherPlayer.location, Sound.ENTITY_PIG_DEATH, 1.0f, 1.0f)
                 }
             },(farTrade.voteTime.toDouble() * 20).toLong())
             return true
@@ -95,6 +97,7 @@ class TradeCommand(private val farTrade: FarTrade) : TabExecutor {
                 sender.sendMessage("§cCouldn't find an active trade request from ${Bukkit.getPlayer(args[1])!!.displayName}§c")
                 return true
             }
+            sender.playSound(sender.location, Sound.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE, 1.0f, 0.75f)
             farTrade.voteMap.remove(Pair(Bukkit.getPlayer(args[1])!!.uniqueId, sender.uniqueId))
             farTrade.voteSessionList.remove(sessionID)
             Bukkit.getScheduler().cancelTasks(farTrade)
@@ -110,7 +113,7 @@ class TradeCommand(private val farTrade: FarTrade) : TabExecutor {
                 sender.sendMessage("§cCouldn't find an active trade request from ${Bukkit.getPlayer(args[1])!!.displayName}§c")
                 return true
             }
-            if (args[1].equals(sender.displayName, ignoreCase = true)) {
+            if (args[1].equals(sender.name, ignoreCase = true)) {
                 sender.sendMessage("§cYou can't trade with yourself!")
                 return true
             }

@@ -1,5 +1,5 @@
 name: FarTrade
-version: 0.1.0
+version: 0.1.2
 main: io.github.gabehowe.fartrade.FarTrade
 api-version: 1.16
 depend:

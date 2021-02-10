@@ -2,6 +2,7 @@ package io.github.gabehowe.fartrade
 
 import org.bukkit.Bukkit
 import org.bukkit.Material
+import org.bukkit.Sound
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.HumanEntity
 import org.bukkit.entity.Player
@@ -50,7 +51,7 @@ class TradeEvents(private val farTrade: FarTrade) : Listener {
             if (event.currentItem == null) {
                 return
             }
-            for (i in 1..12) {
+            for (i in 0..11) {
                 if (receiverInv.contents[farTrade.senderOffer[i]] == null) {
                     event.isCancelled = true
                     receiverInv.setItem(farTrade.senderOffer[i], event.currentItem)
@@ -83,7 +84,7 @@ class TradeEvents(private val farTrade: FarTrade) : Listener {
             if (event.currentItem == null) {
                 return
             }
-            for (i in 1..12) {
+            for (i in 0..11) {
                 if (senderInv.contents[farTrade.senderOffer[i]] == null) {
                     event.isCancelled = true
                     senderInv.setItem(farTrade.senderOffer[i], event.currentItem)
@@ -109,6 +110,7 @@ class TradeEvents(private val farTrade: FarTrade) : Listener {
                 .toList()
         val otherPlayer: UUID
         val otherInventory: Inventory
+        val player = event.whoClicked as Player
         if (event.whoClicked.uniqueId == filter[0].first.first) {
             otherPlayer = filter[0].first.second
             otherInventory = filter[0].second.second
@@ -130,6 +132,8 @@ class TradeEvents(private val farTrade: FarTrade) : Listener {
             event.isCancelled = true
             Bukkit.getPlayer(otherPlayer)?.closeInventory()
             event.whoClicked.closeInventory()
+            Bukkit.getPlayer(otherPlayer)!!.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE, 1.0f, 0.75f)
+            player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE, 1.0f, 0.75f)
         }
         if (event.slot == 48) {
             if (event.currentItem?.type != Material.GREEN_STAINED_GLASS_PANE) {
@@ -138,6 +142,7 @@ class TradeEvents(private val farTrade: FarTrade) : Listener {
             event.currentItem?.type = Material.YELLOW_STAINED_GLASS_PANE
             otherInventory.getItem(50)?.type = Material.YELLOW_STAINED_GLASS_PANE
             otherInventory.getItem(52)?.type = Material.YELLOW_STAINED_GLASS_PANE
+            player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE, 1.0f, 1.25f)
             event.isCancelled = true
             if (event.clickedInventory?.getItem(48)?.type == Material.YELLOW_STAINED_GLASS_PANE && otherInventory.getItem(48)?.type == Material.YELLOW_STAINED_GLASS_PANE) {
                 farTrade.tradeMap.remove(filter[0].first)
@@ -150,6 +155,8 @@ class TradeEvents(private val farTrade: FarTrade) : Listener {
                     event.whoClicked.closeInventory()
                     return
                 }
+                Bukkit.getPlayer(otherPlayer)!!.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE, 1.0f, 1.5f)
+                player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE, 1.0f, 1.5f)
                 farTrade.acceptTrade(event.whoClicked.uniqueId, otherPlayer, event.clickedInventory!!, otherInventory)
                 event.isCancelled = true
                 return

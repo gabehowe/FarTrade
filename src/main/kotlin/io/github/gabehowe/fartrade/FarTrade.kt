@@ -4,6 +4,7 @@ import Treasury
 import net.milkbowl.vault.economy.Economy
 import org.bukkit.Bukkit
 import org.bukkit.Material
+import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
@@ -39,7 +40,6 @@ class FarTrade : JavaPlugin() {
     val senderOffer = mutableListOf<Int>()
     override fun onEnable() {
         var e = 10
-        senderOffer.add(10)
         var timeCount = 0
         while (e in 9..39) {
             timeCount += 1
@@ -114,6 +114,8 @@ class FarTrade : JavaPlugin() {
     }
 
     fun newTrade(senderUUID: UUID, receiverUUID: UUID) {
+        val p1 = Bukkit.getPlayer(senderUUID)!!
+        val p2 = Bukkit.getPlayer(receiverUUID)!!
         val uuidPair = Pair(senderUUID, receiverUUID)
         val invPair = Pair(
             Bukkit.createInventory(TradeInventory(this), 54, "Sender Inventory"),
@@ -124,13 +126,17 @@ class FarTrade : JavaPlugin() {
         initialize(receiverUUID, senderUUID, tradeMap[uuidPair]!!.second)
         Bukkit.getPlayer(senderUUID)?.openInventory(tradeMap[uuidPair]!!.first)
         Bukkit.getPlayer(receiverUUID)?.openInventory(tradeMap[uuidPair]!!.second)
+        p1.playSound(p1.location, Sound.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE, 1.0f, 1.25f)
+        p2.playSound(p2.location, Sound.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE, 1.0f, 1.25f)
     }
 
     fun acceptTrade(uuid: UUID, uuid2: UUID, inventory: Inventory, inventory2: Inventory) {
         val p1 = Bukkit.getPlayer(uuid)!!
         val p2 = Bukkit.getPlayer(uuid2)!!
+        val loc2 = Bukkit.getPlayer(uuid2)!!.location
+        loc2.world = Bukkit.getPlayer(uuid)!!.world
         var distanceCost =
-            ((Math.round(((distancePrice.toDouble() * p1.location.distance(p2.location) - distancePrice.toDouble() * distanceBuffer.toDouble())) * 100.0) / 100.0))
+            ((Math.round(((distancePrice.toDouble() * p1.location.distance(loc2) - distancePrice.toDouble() * distanceBuffer.toDouble())) * 100.0) / 100.0))
         if (distanceCost < 0) {
             distanceCost = 0.00
         }
@@ -142,11 +148,11 @@ class FarTrade : JavaPlugin() {
                 ?.sendMessage("§c${Bukkit.getPlayer(uuid)?.displayName}§c didn't have enough money to trade")
             return
         }
-        for (i in 0..12) {
+        for (i in 0..11) {
             val item = inventory.getItem(senderOffer[i]) ?: continue
             Bukkit.getPlayer(uuid2)?.inventory?.addItem(item)
         }
-        for (i in 0..12) {
+        for (i in 0..11) {
             val item = inventory2.getItem(senderOffer[i]) ?: continue
             Bukkit.getPlayer(uuid)?.inventory?.addItem(item)
         }
@@ -154,24 +160,29 @@ class FarTrade : JavaPlugin() {
         treasury.reserveBalance += distanceCost
         Bukkit.getPlayer(uuid)?.closeInventory()
         Bukkit.getPlayer(uuid2)?.closeInventory()
-        Bukkit.getPlayer(uuid)?.sendMessage("§aTrade Accepted, $${distanceCost} withdrawn from your account")
+        if (distanceCost == 0.0) {
+            Bukkit.getPlayer(uuid)?.sendMessage("§aTrade Accepted, $${distanceCost}0 withdrawn from your account")
+        }
+        else {
+            Bukkit.getPlayer(uuid)?.sendMessage("§aTrade Accepted, $${distanceCost} withdrawn from your account")
+        }
         Bukkit.getPlayer(uuid2)?.sendMessage("§aTrade Accepted")
     }
 
     fun returnItems(uuid: UUID, uuid2: UUID, inventory: Inventory, inventory2: Inventory) {
         val p1 = Bukkit.getPlayer(uuid)!!
         val p2 = Bukkit.getPlayer(uuid2)!!
-        for (i in 0..12) {
+        for (i in 0..11) {
             val item = inventory.getItem(senderOffer[i]) ?: continue
             p1.inventory.addItem(item)
         }
-        for (i in 0..12) {
+        for (i in 0..11) {
             val item = inventory2.getItem(senderOffer[i]) ?: continue
             p2.inventory.addItem(item)
         }
     }
 
-    private fun initialize(seeingPlayer: UUID, player2: UUID, inventory: Inventory) {
+    private fun initialize(uuid: UUID, uuid2: UUID, inventory: Inventory) {
         for (i in 45..53) {
             inventory.setItem(i, blackglass)
         }
@@ -197,15 +208,18 @@ class FarTrade : JavaPlugin() {
         val nuggetMeta = goldNugget.itemMeta
         nuggetMeta?.setDisplayName("§6Trade Price")
         val mutableList = mutableListOf<String>()
-        mutableList.add(
-            "§6$${
-                Math.round(
-                    (distancePrice.toDouble() * Bukkit.getPlayer(seeingPlayer)?.location?.distance(
-                        Bukkit.getPlayer(player2)?.location!!
-                    )!!) * 100.0
-                ) / 100.0
-            }"
-        )
+        val loc2 = Bukkit.getPlayer(uuid2)!!.location
+        loc2.world = Bukkit.getPlayer(uuid)!!.world
+        var disPrice = Math.round(((distancePrice.toDouble() * Bukkit.getPlayer(uuid)!!.location.distance(loc2) - distancePrice.toDouble() * distanceBuffer.toDouble())) * 100.0) / 100.0
+        if (disPrice < 0) {
+            disPrice = 0.0
+            mutableList.add("§6$${disPrice}0"
+            )
+        }
+        else {
+            mutableList.add("§6$${disPrice}"
+            )
+        }
         mutableList.add("§6only the sending player")
         mutableList.add("§6has to pay this")
         nuggetMeta?.lore = mutableList
@@ -213,16 +227,16 @@ class FarTrade : JavaPlugin() {
         inventory.setItem(31, goldNugget)
         val playerhead = ItemStack(Material.PLAYER_HEAD)
         val playerheadmeta = playerhead.itemMeta as SkullMeta?
-        playerheadmeta!!.owningPlayer = Bukkit.getPlayer(seeingPlayer)
-        playerheadmeta.setDisplayName("§6${Bukkit.getPlayer(seeingPlayer)?.displayName}§c")
+        playerheadmeta!!.owningPlayer = Bukkit.getPlayer(uuid)
+        playerheadmeta.setDisplayName("§6${Bukkit.getPlayer(uuid)?.displayName}§c")
         playerhead.itemMeta = playerheadmeta
         inventory.setItem(47, playerhead)
         inventory.setItem(46, redglass)
         inventory.setItem(48, greenglass)
         val playerhead2 = ItemStack(Material.PLAYER_HEAD)
         val playerheadmeta2 = playerhead2.itemMeta as SkullMeta?
-        playerheadmeta2!!.owningPlayer = Bukkit.getPlayer(player2)
-        playerheadmeta2.setDisplayName("§6${Bukkit.getPlayer(player2)?.displayName}§c")
+        playerheadmeta2!!.owningPlayer = Bukkit.getPlayer(uuid2)
+        playerheadmeta2.setDisplayName("§6${Bukkit.getPlayer(uuid2)?.displayName}§c")
         playerhead2.itemMeta = playerheadmeta2
         inventory.setItem(51, playerhead2)
 
@@ -240,7 +254,7 @@ class FarTrade : JavaPlugin() {
 
     fun countItems(inventory: Inventory): Int {
         var itemsNumber = 0
-        for (i in 0..12) {
+        for (i in 0..11) {
             val item = inventory.getItem(senderOffer[i]) ?: continue
             itemsNumber++
         }
