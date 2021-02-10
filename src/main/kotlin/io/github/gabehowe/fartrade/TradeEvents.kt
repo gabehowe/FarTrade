@@ -157,7 +157,7 @@ class TradeEvents(private val farTrade: FarTrade) : Listener {
                 }
                 Bukkit.getPlayer(otherPlayer)!!.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE, 1.0f, 1.5f)
                 player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE, 1.0f, 1.5f)
-                farTrade.acceptTrade(event.whoClicked.uniqueId, otherPlayer, event.clickedInventory!!, otherInventory)
+                farTrade.acceptTrade(filter[0].first.first, filter[0].first.second, filter[0].second.first, filter[0].second.second)
                 event.isCancelled = true
                 return
             }

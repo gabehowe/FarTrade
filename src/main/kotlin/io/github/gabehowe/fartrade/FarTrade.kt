@@ -38,12 +38,24 @@ class FarTrade : JavaPlugin() {
             return (config.get("distance-price") as Number?)!!
         }
     val senderOffer = mutableListOf<Int>()
+    val receiverOffer = mutableListOf<Int>()
     override fun onEnable() {
         var e = 10
         var timeCount = 0
-        while (e in 9..39) {
+        while (e in 10..39) {
             timeCount += 1
             senderOffer.add(e)
+            if (timeCount == 3) {
+                e += 7
+                timeCount = 0
+                continue
+            }
+            e += 1
+        }
+        e = 14
+        while (e in 14..43) {
+            timeCount += 1
+            receiverOffer.add(e)
             if (timeCount == 3) {
                 e += 7
                 timeCount = 0
@@ -255,7 +267,7 @@ class FarTrade : JavaPlugin() {
     fun countItems(inventory: Inventory): Int {
         var itemsNumber = 0
         for (i in 0..11) {
-            val item = inventory.getItem(senderOffer[i]) ?: continue
+            val item = inventory.getItem(receiverOffer[i]) ?: continue
             itemsNumber++
         }
         return itemsNumber
