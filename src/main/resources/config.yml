@@ -2,5 +2,5 @@
 vote-time: 60
 # distance in blocks between players to not charge for trading
 distance-buffer: 50
-# amount to charge per 10 blocks between players
+# amount to charge per block between players
 distance-price: 0.01
